@@ -9,8 +9,8 @@ public class CellDefine {
 	public String type;
 	
 	// cell merges
-	public int rowSpan;
-	public int colSpan;
+	public int rowSpan = 1;
+	public int colSpan = 1;
 	
 	// style name predefined in style section. when customStyle is defined. this field is ignored.
 	public String styleName;
