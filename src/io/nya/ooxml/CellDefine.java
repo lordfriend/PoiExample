@@ -5,8 +5,16 @@ public class CellDefine {
 	// raw data
 	public String data;
 	
-	// data type
-	public String type;
+	/**
+	 *  cell type of {@link Cell}
+	 *  String type is 1;
+	 *  numeric type is 0;
+	 *  formula type is 2;
+	 *  error type is 5;
+	 *  boolean type is 4;
+	 *  blank type is 3;
+	 */
+	public int type;
 	
 	// cell merges
 	public int rowSpan = 1;
@@ -16,5 +24,5 @@ public class CellDefine {
 	public String styleName;
 	
 	// custom style for this cell
-	public CellStyle customStyle;
+	public CellStyleDefine customStyle;
 }
