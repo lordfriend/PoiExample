@@ -82,9 +82,11 @@ public class GenericExcel {
 		mMergedRanges = new HashSet<CellRangeAddress>();
 	}
 	
-	public void addSharedStyle(CellStyleDefine cellStyleDefine) {
-		CellStyle style = mWb.createCellStyle();
-		
+	public void addSharedStyle(String styleName, CellStyleDefine cellStyleDefine) {
+		if(mSharedCellStyles == null) {
+			mSharedCellStyles = new HashMap<String, CellStyle>();
+		}
+		mSharedCellStyles.put(styleName, createStyle(cellStyleDefine));
 	}
 	
 	private int getColumnCount(ArrayList<CellDefine> line) {
@@ -95,10 +97,21 @@ public class GenericExcel {
 		return count;
 	}
 	
+	private CellStyle createStyle(CellStyleDefine styleDefine) {
+		return null;
+	}
+	
 	private void createCell(Row row, int rowIndex, int colIndex, CellDefine cellDefine) {
 		Cell cell = row.createCell(colIndex);
 		cell.setCellValue(cellDefine.data);
-//		cell.setCellStyle(cellDefine.styleName);
+		if(cellDefine.customStyle != null) {
+			cell.setCellStyle(createStyle(cellDefine.customStyle));
+		} else if(cellDefine.styleName != null) {
+			CellStyle cellStyle = mSharedCellStyles.get(cellDefine.styleName);
+			if(cellStyle !=null) {
+				cell.setCellStyle(cellStyle);
+			}
+		}
 		cell.setCellType(cellDefine.type);
 	}
 	

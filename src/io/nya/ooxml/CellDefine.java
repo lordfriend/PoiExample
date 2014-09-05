@@ -1,5 +1,7 @@
 package io.nya.ooxml;
 
+import org.apache.poi.ss.usermodel.CellStyle;
+
 public class CellDefine {
 
 	// raw data
