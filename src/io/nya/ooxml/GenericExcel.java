@@ -1,17 +1,32 @@
 package io.nya.ooxml;
 
+import java.awt.Color;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 
+import org.apache.poi.ss.usermodel.BorderStyle;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.CellStyle;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.FontFamily;
+import org.apache.poi.ss.usermodel.FontUnderline;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.VerticalAlignment;
 import org.apache.poi.ss.util.CellRangeAddress;
 import org.apache.poi.xssf.streaming.SXSSFWorkbook;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder.BorderSide;
 
 public class GenericExcel {
 	
@@ -89,6 +104,33 @@ public class GenericExcel {
 		mSharedCellStyles.put(styleName, createStyle(cellStyleDefine));
 	}
 	
+	public Color getAwtColor(String color) {
+		return getAwtColor(color, Color.black);
+	};
+	
+	public Color getAwtColor(String color, Color defaultColor) {
+		if(color.startsWith("#")) {
+			return Color.decode(color.substring(1));
+		} else {
+			// color is a pre-defined field in {@link Color}
+			Color preDefinedColor;
+			try {
+				Field field = Color.class.getField(color);
+				preDefinedColor = (Color) field.get(null);
+			} catch (Exception e) {
+				e.printStackTrace();
+				preDefinedColor = defaultColor;
+			}
+			return preDefinedColor;
+		}
+	};
+	
+	public void writeToFile(String filePath) throws IOException {
+		FileOutputStream out = new FileOutputStream(filePath);
+		mWb.write(out);
+		out.close();
+	}
+	
 	private int getColumnCount(ArrayList<CellDefine> line) {
 		int count = 0;
 		for(CellDefine cellDefine: line) {
@@ -97,8 +139,135 @@ public class GenericExcel {
 		return count;
 	}
 	
+	private void setBorderStyleAndColor(XSSFCellStyle style, BorderDefine borderDefine, BorderSide side) {
+		if(borderDefine != null) {
+			BorderStyle borderStyle;
+			try {
+				borderStyle = BorderStyle.valueOf(borderDefine.style);
+				
+				if(side.equals(BorderSide.TOP)) {
+					style.setBorderTop(borderStyle);
+				} else if(side.equals(BorderSide.RIGHT)) {
+					style.setBorderRight(borderStyle);
+				} else if(side.equals(BorderSide.BOTTOM)) {
+					style.setBorderBottom(borderStyle);
+				} else {
+					style.setBorderLeft(borderStyle);
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if(borderDefine.color != null) {
+				style.setBorderColor(side, new XSSFColor(getAwtColor(borderDefine.color)));				
+			}
+		}
+	}
+	
 	private CellStyle createStyle(CellStyleDefine styleDefine) {
-		return null;
+		// use XSSFCellStyle because we will generate a xlsx document
+		XSSFCellStyle style = (XSSFCellStyle) mWb.createCellStyle();
+		// set alignment
+		if(styleDefine.alignment != null) {
+			try {
+				HorizontalAlignment alignment = HorizontalAlignment.valueOf(styleDefine.alignment);
+				style.setAlignment(alignment);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
+		}
+		if(styleDefine.vertical_alignment != null) {
+			try {
+				VerticalAlignment verticalAlignment = VerticalAlignment.valueOf(styleDefine.vertical_alignment);
+				style.setVerticalAlignment(verticalAlignment);
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
+			}
+		}
+		style.setRotation(styleDefine.rotation);
+		style.setWrapText(styleDefine.wrap_text);
+		style.setHidden(styleDefine.hidden);
+		style.setIndention(styleDefine.indention);
+		
+		if(styleDefine.border != null ||
+				styleDefine.border_top != null ||
+				styleDefine.border_right != null || 
+				styleDefine.border_bottom != null ||
+				styleDefine.border_left != null) {
+			// set border styles and color
+			BorderDefine[] borderDefines = styleDefine.getBorderDefine();
+			setBorderStyleAndColor(style, borderDefines[0], BorderSide.TOP);
+			setBorderStyleAndColor(style, borderDefines[1], BorderSide.RIGHT);
+			setBorderStyleAndColor(style, borderDefines[2], BorderSide.BOTTOM);
+			setBorderStyleAndColor(style, borderDefines[3], BorderSide.LEFT);
+			
+		}
+		
+		// set font
+		if(styleDefine.font != null) {
+			XSSFFont font = (XSSFFont) mWb.createFont();
+			if(styleDefine.font.color != null) {
+				font.setColor(new XSSFColor(getAwtColor(styleDefine.font.color)));				
+			}
+			
+			font.setItalic(styleDefine.font.italic);
+			font.setStrikeout(styleDefine.font.strike_out);
+			
+			if(styleDefine.font.bold_weight > 0) {
+				font.setBoldweight(styleDefine.font.bold_weight);			
+			}
+			
+			if(styleDefine.font.font_family != null) {
+				try {
+					FontFamily fontFamily = FontFamily.valueOf(styleDefine.font.font_family);
+					font.setFamily(fontFamily);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(styleDefine.font.font_name != null) {
+				font.setFontName(styleDefine.font.font_name);
+			}
+			
+			if(styleDefine.font.underline != null) {
+				try {
+					FontUnderline underline = FontUnderline.valueOf(styleDefine.font.underline);
+					font.setUnderline(underline);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+			
+			if(styleDefine.font.height > 0) {
+				font.setFontHeight(styleDefine.font.height);
+			}
+			
+			style.setFont(font);
+		}
+		
+		
+		// set fill
+		
+		if(styleDefine.fill != null) {
+			if(styleDefine.fill.foreground_color != null) {
+				style.setFillForegroundColor(new XSSFColor(getAwtColor(styleDefine.fill.foreground_color)));
+			}
+			
+			if(styleDefine.fill.background_color != null) {
+				style.setFillBackgroundColor(new XSSFColor(getAwtColor(styleDefine.fill.background_color)));
+			}
+			
+			if(styleDefine.fill.fill_pattern != null) {
+				try {
+					FillPatternType fillPattern = FillPatternType.valueOf(styleDefine.fill.fill_pattern);
+					style.setFillPattern(fillPattern);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
+		return style;
 	}
 	
 	private void createCell(Row row, int rowIndex, int colIndex, CellDefine cellDefine) {

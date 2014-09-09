@@ -98,8 +98,30 @@ public class PoiExample {
 		sumCell.styleName = "body";
 		forthRow.add(sumCell);
 		
-		GenericExcel excel = new GenericExcel();
+		CellStyleDefine headerStyle = new CellStyleDefine();
 		
+		headerStyle.font = new FontDefine();
+		headerStyle.font.bold_weight = 400;
+		headerStyle.border = new BorderDefine();
+		headerStyle.border.style = "THICK";
+		headerStyle.fill = new FillDefine();
+		headerStyle.fill.background_color = "yellow";
+		headerStyle.alignment = "CENTER";
+		
+		CellStyleDefine bodyStyle = new CellStyleDefine();
+		bodyStyle.border = new BorderDefine();
+		bodyStyle.border.style = "THIN";
+		
+		GenericExcel excel = new GenericExcel();
+		excel.addSharedStyle("header", headerStyle);
+		excel.addSharedStyle("body", bodyStyle);
+		
+		excel.writeLine(firstRow);
+		excel.writeLine(secondRow);
+		excel.writeLine(thirdRow);
+		excel.writeLine(forthRow);
+		
+		excel.writeToFile("test.xlsx");
 	}
 
 }
