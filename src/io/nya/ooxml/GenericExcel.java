@@ -65,8 +65,9 @@ public class GenericExcel {
 			int colToSkip = 0;
 			do {
 				colToSkip = checkMergedRegion(mRowIndex, colIndex);
+				System.out.println("colToSkip: " + colToSkip);
 				if(colToSkip > 0) {
-					colIndex += colToSkip + 1;					
+					colIndex += colToSkip;					
 				}
 				if(colIndex >= mCurrentSheetColumnCount) {
 					mRowIndex++;
@@ -84,6 +85,8 @@ public class GenericExcel {
 			// if colSpan is greater than 1, we skip the n colSpan to avoid checkMergedRegion
 			if(colSpan > 1) {
 				colIndex += colSpan;
+			} else {
+				colIndex++;
 			}
 		}
 		mRowIndex++;
@@ -272,16 +275,31 @@ public class GenericExcel {
 	
 	private void createCell(Row row, int rowIndex, int colIndex, CellDefine cellDefine) {
 		Cell cell = row.createCell(colIndex);
-		cell.setCellValue(cellDefine.data);
-		if(cellDefine.customStyle != null) {
-			cell.setCellStyle(createStyle(cellDefine.customStyle));
-		} else if(cellDefine.styleName != null) {
-			CellStyle cellStyle = mSharedCellStyles.get(cellDefine.styleName);
-			if(cellStyle !=null) {
-				cell.setCellStyle(cellStyle);
-			}
+		
+		switch(cellDefine.type) {
+		case Cell.CELL_TYPE_NUMERIC:
+			cell.setCellValue(Double.valueOf(cellDefine.data));
+			break;
+		case Cell.CELL_TYPE_BLANK:
+			cell.setCellValue("");
+			break;
+		case Cell.CELL_TYPE_BOOLEAN:
+			cell.setCellValue(Boolean.valueOf(cellDefine.data));
+			break;
+		default:
+			cell.setCellValue(cellDefine.data);
 		}
+
 		cell.setCellType(cellDefine.type);
+		
+//		if(cellDefine.customStyle != null) {
+//			cell.setCellStyle(createStyle(cellDefine.customStyle));
+//		} else if(cellDefine.styleName != null) {
+//			CellStyle cellStyle = mSharedCellStyles.get(cellDefine.styleName);
+//			if(cellStyle !=null) {
+//				cell.setCellStyle(cellStyle);
+//			}
+//		}
 	}
 	
 	private int checkAndStoreMergeRegion(CellDefine cellDefine, int rowIndex, int colIndex) {

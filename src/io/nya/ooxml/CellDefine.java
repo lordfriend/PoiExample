@@ -16,7 +16,7 @@ public class CellDefine {
 	 *  boolean type is 4;
 	 *  blank type is 3;
 	 */
-	public int type;
+	public int type = 1;
 	
 	// cell merges
 	public int rowSpan = 1;

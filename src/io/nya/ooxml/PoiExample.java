@@ -46,18 +46,17 @@ public class PoiExample {
 		
 		ArrayList<CellDefine> secondRow = new ArrayList<CellDefine>();
 		
-		for(String country: regionMap.values()) {
-			int index = secondRow.indexOf(country);
-			if(index == -1) {
-				CellDefine newCell = new CellDefine();
-				newCell.data = country;
-				newCell.styleName = "header";
-				secondRow.add(newCell);
-			} else {
-				CellDefine cell = secondRow.get(index);
-				cell.colSpan++;
-			}
-		}
+		CellDefine cnCell = new CellDefine();
+		cnCell.data = "CN";
+		cnCell.colSpan = 4;
+		cnCell.styleName = "header";
+		secondRow.add(cnCell);
+		CellDefine usCell = new CellDefine();
+		usCell.data = "US";
+		usCell.colSpan = 5;
+		usCell.styleName = "body";
+		secondRow.add(usCell);
+
 		CellDefine sumTitleCell = new CellDefine();
 		sumTitleCell.data = "合计";
 		sumTitleCell.rowSpan = 2;
@@ -81,6 +80,7 @@ public class PoiExample {
 		CellDefine timeSpanCell = new CellDefine();
 		timeSpanCell.data = "20140101-20140909";
 		timeSpanCell.styleName = "body";
+		forthRow.add(timeSpanCell);
 		
 		for(CellDefine cell: thirdRow) {
 			String prov = cell.data;
@@ -101,7 +101,7 @@ public class PoiExample {
 		CellStyleDefine headerStyle = new CellStyleDefine();
 		
 		headerStyle.font = new FontDefine();
-		headerStyle.font.bold_weight = 400;
+		headerStyle.font.bold_weight = 100;
 		headerStyle.border = new BorderDefine();
 		headerStyle.border.style = "THICK";
 		headerStyle.fill = new FillDefine();
@@ -115,6 +115,20 @@ public class PoiExample {
 		GenericExcel excel = new GenericExcel();
 		excel.addSharedStyle("header", headerStyle);
 		excel.addSharedStyle("body", bodyStyle);
+		
+		for(int i = 0; i < firstRow.size(); i++) {
+			System.out.println(i+": " + firstRow.get(i).data);			
+		}
+		for(int i = 0; i < secondRow.size(); i++) {
+			System.out.println(i+": " + secondRow.get(i).data);			
+		}
+		for(int i = 0; i < thirdRow.size(); i++) {
+			System.out.println(i+": " + thirdRow.get(i).data);			
+		}
+		for(int i = 0; i < forthRow.size(); i++) {
+			System.out.println(i+": " + forthRow.get(i).data);			
+		}
+		
 		
 		excel.writeLine(firstRow);
 		excel.writeLine(secondRow);
