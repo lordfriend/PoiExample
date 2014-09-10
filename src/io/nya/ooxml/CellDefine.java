@@ -1,7 +1,5 @@
 package io.nya.ooxml;
 
-import org.apache.poi.ss.usermodel.CellStyle;
-
 public class CellDefine {
 
 	// raw data
@@ -24,6 +22,8 @@ public class CellDefine {
 	
 	// style name predefined in style section. when customStyle is defined. this field is ignored.
 	public String styleName;
+	
+	public short height = -1;
 	
 	// custom style for this cell
 	public CellStyleDefine customStyle;

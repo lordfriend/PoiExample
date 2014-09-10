@@ -26,6 +26,7 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
+import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder.BorderSide;
 
 public class GenericExcel {
@@ -59,13 +60,18 @@ public class GenericExcel {
 			mCurrentSheetColumnCount = getColumnCount(rowData);
 		}
 		int colIndex = 0;
-		Row row = null;
+		short height = -1;
 		Sheet sheet = mCurrentSheet;
+		// try to get row at index of mRowIndex where we may already create an row for some merged regions.
+		Row row = sheet.getRow(mRowIndex);
+		if(row != null) {
+			height = row.getHeight();
+		}
 		for(CellDefine cellDefine: rowData) {
 			int colToSkip = 0;
 			do {
 				colToSkip = checkMergedRegion(mRowIndex, colIndex);
-				System.out.println("colToSkip: " + colToSkip);
+//				System.out.println("colToSkip: " + colToSkip);
 				if(colToSkip > 0) {
 					colIndex += colToSkip;					
 				}
@@ -81,6 +87,9 @@ public class GenericExcel {
 			
 			createCell(row, mRowIndex, colIndex, cellDefine);
 			
+			if(cellDefine.height > -1 && cellDefine.height > height) {
+				height = cellDefine.height;
+			}
 			int colSpan = checkAndStoreMergeRegion(cellDefine, mRowIndex, colIndex);
 			// if colSpan is greater than 1, we skip the n colSpan to avoid checkMergedRegion
 			if(colSpan > 1) {
@@ -89,6 +98,11 @@ public class GenericExcel {
 				colIndex++;
 			}
 		}
+		
+		if(height > -1) {
+			row.setHeight(height);
+		}
+		
 		mRowIndex++;
 		removeOldRanges(mRowIndex);
 	}
@@ -113,7 +127,7 @@ public class GenericExcel {
 	
 	public Color getAwtColor(String color, Color defaultColor) {
 		if(color.startsWith("#")) {
-			return Color.decode(color.substring(1));
+			return Color.decode(color);
 		} else {
 			// color is a pre-defined field in {@link Color}
 			Color preDefinedColor;
@@ -128,10 +142,19 @@ public class GenericExcel {
 		}
 	};
 	
+	public void autoSizeColumn(int columnIndex) {
+		mCurrentSheet.autoSizeColumn(columnIndex);
+	}
+	
+	public void setColumnWidth(int columnIndex, int width) {
+		mCurrentSheet.setColumnWidth(columnIndex, width);
+	}
+	
 	public void writeToFile(String filePath) throws IOException {
 		FileOutputStream out = new FileOutputStream(filePath);
 		mWb.write(out);
 		out.close();
+		mWb.dispose();
 	}
 	
 	private int getColumnCount(ArrayList<CellDefine> line) {
@@ -274,6 +297,7 @@ public class GenericExcel {
 	}
 	
 	private void createCell(Row row, int rowIndex, int colIndex, CellDefine cellDefine) {
+		Sheet sheet = mCurrentSheet;
 		Cell cell = row.createCell(colIndex);
 		
 		switch(cellDefine.type) {
@@ -292,14 +316,39 @@ public class GenericExcel {
 
 		cell.setCellType(cellDefine.type);
 		
-//		if(cellDefine.customStyle != null) {
-//			cell.setCellStyle(createStyle(cellDefine.customStyle));
-//		} else if(cellDefine.styleName != null) {
-//			CellStyle cellStyle = mSharedCellStyles.get(cellDefine.styleName);
-//			if(cellStyle !=null) {
-//				cell.setCellStyle(cellStyle);
-//			}
-//		}
+		CellStyle style = null;
+		if(cellDefine.customStyle != null) {
+			style = createStyle(cellDefine.customStyle);
+		} else if(cellDefine.styleName != null) {
+			style = mSharedCellStyles.get(cellDefine.styleName);
+		}
+		
+		if(style != null) {
+			cell.setCellStyle(style);
+		}
+		
+		// create empty cell for merged regions
+		
+		if(cellDefine.rowSpan > 1 || cellDefine.colSpan > 1) {
+			for(int r = rowIndex; r < rowIndex + cellDefine.rowSpan; r ++) {
+				Row rowOfMerged = sheet.getRow(r);
+				if(rowOfMerged == null) {
+					rowOfMerged = sheet.createRow(r);
+				}
+				
+				for(int c = colIndex; c < colIndex + cellDefine.colSpan; c++) {
+					Cell cellOfMerged = rowOfMerged.getCell(c);
+					if(cellOfMerged == null) {
+						cellOfMerged = rowOfMerged.createCell(c);
+					}
+					
+					if(style != null) {
+						cellOfMerged.setCellStyle(style);
+					}
+				}
+			}
+		}
+
 	}
 	
 	private int checkAndStoreMergeRegion(CellDefine cellDefine, int rowIndex, int colIndex) {

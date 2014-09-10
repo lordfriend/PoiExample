@@ -1,21 +1,31 @@
 package io.nya.ooxml;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 
+import redis.clients.jedis.Jedis;
+import redis.clients.jedis.JedisPool;
+import redis.clients.jedis.JedisPoolConfig;
+
 public class PoiExample {
 	
-	private static HashMap<String, String> regionMap = new HashMap<String, String>();
-	private static HashMap<String, Integer> provinceData = new HashMap<String, Integer>();
-
 	public static void main(String[] args) throws Exception {
-		
+		 generalDataTest();
+	}
+	
+	public static void generalDataTest() throws IOException {
+		HashMap<String, String> regionMap = new HashMap<String, String>();
+		HashMap<String, Integer> provinceData = new HashMap<String, Integer>();
 		regionMap.put("Texas", "US");
 		regionMap.put("California", "US");
 		regionMap.put("New Jersy", "US");
@@ -54,7 +64,7 @@ public class PoiExample {
 		CellDefine usCell = new CellDefine();
 		usCell.data = "US";
 		usCell.colSpan = 5;
-		usCell.styleName = "body";
+		usCell.styleName = "header";
 		secondRow.add(usCell);
 
 		CellDefine sumTitleCell = new CellDefine();
@@ -70,6 +80,7 @@ public class PoiExample {
 			for(Entry<String, String> entry: regionMap.entrySet()) {
 				if(entry.getValue().equals(country)) {
 					CellDefine provCell = new CellDefine();
+					provCell.styleName = "header";
 					provCell.data = entry.getKey();
 					thirdRow.add(provCell);
 				}
@@ -105,7 +116,8 @@ public class PoiExample {
 		headerStyle.border = new BorderDefine();
 		headerStyle.border.style = "THICK";
 		headerStyle.fill = new FillDefine();
-		headerStyle.fill.background_color = "yellow";
+		headerStyle.fill.foreground_color = "yellow";
+		headerStyle.fill.fill_pattern = "SOLID_FOREGROUND";
 		headerStyle.alignment = "CENTER";
 		
 		CellStyleDefine bodyStyle = new CellStyleDefine();
@@ -135,7 +147,50 @@ public class PoiExample {
 		excel.writeLine(thirdRow);
 		excel.writeLine(forthRow);
 		
+		for(int i = 0; i < 1000; i++) {
+			ArrayList<CellDefine> newRow = new ArrayList<CellDefine>();
+			CellDefine timeSpan = new CellDefine();
+			timeSpan.data = "20140101-20140909";
+			timeSpan.styleName = "body";
+			newRow.add(timeSpan);
+			int total = 0;
+			for(int j = 0; j < provinceData.size(); j++) {
+				CellDefine dataCell = new CellDefine();
+				dataCell.data = String.valueOf(i + j);
+				dataCell.type = Cell.CELL_TYPE_NUMERIC;
+				dataCell.styleName = "body";
+				newRow.add(dataCell);
+				total += i + j;				
+			}
+			CellDefine totalCell = new CellDefine();
+			totalCell.data = String.valueOf(total);
+			totalCell.type = Cell.CELL_TYPE_NUMERIC;
+			totalCell.styleName = "body";
+			newRow.add(totalCell);
+			excel.writeLine(newRow);
+		}
+		
+//		excel.setColumnWidth(0, 20);
+		excel.autoSizeColumn(0);
+		
 		excel.writeToFile("test.xlsx");
+	}
+	
+	public static void redisTest() throws IOException {
+		JedisPool pool = new JedisPool(new JedisPoolConfig(), "localhost");
+		Jedis jedis = null;
+		try {
+			jedis = pool.getResource();
+		} catch(Exception e) {
+			e.printStackTrace();
+			return;
+		}
+		String exportId = new BufferedReader(new InputStreamReader(System.in)).readLine();
+		long length = jedis.llen(exportId);
+		List<String> rawList = jedis.lrange(exportId, 0, length);
+		for(String data: rawList) {
+			
+		}
 	}
 
 }
