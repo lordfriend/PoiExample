@@ -1,6 +1,25 @@
-package io.nya.ooxml;
+package io.nya.ooxml.define;
 
 public class CellDefine {
+	
+	public CellDefine() {
+		// default constructor
+	}
+	
+	public CellDefine(String data) {
+		this.data = data;
+	}
+	
+	public CellDefine(String data, String styleName) {
+		this.data = data;
+		this.styleName = styleName;
+	}
+	
+	public CellDefine(String data, int type, String styleName) {
+		this.data = data;
+		this.type = type;
+		this.styleName = styleName;
+	}
 
 	// raw data
 	public String data;

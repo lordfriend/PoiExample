@@ -1,4 +1,4 @@
-package io.nya.ooxml;
+package io.nya.ooxml.define;
 
 public class ColorDefine {
 

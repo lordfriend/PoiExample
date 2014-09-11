@@ -1,7 +1,10 @@
 package io.nya.ooxml;
 
+import io.nya.ooxml.define.BorderDefine;
+import io.nya.ooxml.define.CellDefine;
+import io.nya.ooxml.define.CellStyleDefine;
+
 import java.awt.Color;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Field;
@@ -26,7 +29,6 @@ import org.apache.poi.xssf.streaming.SXSSFWorkbook;
 import org.apache.poi.xssf.usermodel.XSSFCellStyle;
 import org.apache.poi.xssf.usermodel.XSSFColor;
 import org.apache.poi.xssf.usermodel.XSSFFont;
-import org.apache.poi.xssf.usermodel.XSSFRow;
 import org.apache.poi.xssf.usermodel.extensions.XSSFCellBorder.BorderSide;
 
 public class GenericExcel {

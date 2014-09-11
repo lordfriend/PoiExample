@@ -1,4 +1,4 @@
-package io.nya.ooxml;
+package io.nya.ooxml.define;
 
 import org.apache.poi.ss.usermodel.FontFamily;
 import org.apache.poi.ss.usermodel.FontUnderline;
