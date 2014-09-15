@@ -97,7 +97,7 @@ public class PoiExample {
 			long start = 0;
 			try {
 				while(start < length) {
-					List<String> result = jedis.lrange(exportId, start, THRESHOLD);
+					List<String> result = jedis.lrange(exportId, start, start + THRESHOLD - 1);
 					
 					for(String rawData: result) {
 						Detail detail = mapper.readValue(rawData, Detail.class);
@@ -119,6 +119,7 @@ public class PoiExample {
 					
 					
 					start += THRESHOLD;
+
 				}
 				
 				excel.writeToFile(filename);
