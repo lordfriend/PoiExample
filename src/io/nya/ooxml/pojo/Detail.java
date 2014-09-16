@@ -21,4 +21,12 @@ public class Detail {
 	public String province;
 	@JsonProperty
 	public String region;
+	@JsonProperty
+	public String nd_pd_online = "";
+	@JsonProperty
+	public String nd_pd_orderCompany = "";
+	@JsonProperty
+	public String nd_pd_province = "";
+	@JsonProperty
+	public String nd_pd_region = "";
 }

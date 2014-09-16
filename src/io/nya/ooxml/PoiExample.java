@@ -74,7 +74,7 @@ public class PoiExample {
 		long length = jedis.llen(exportId);
 		final long THRESHOLD = 100000;
 
-		String[] titles = new String[]{"序列号", "上传日期", "激活日期", "线上线下", "机型", "所对应的代理商", "省份", "分区"};
+		String[] titles = new String[]{"序列号", "上传日期", "激活日期", "线上线下", "机型", "所对应的代理商", "省份", "分区", "ND/PD线上线下", "ND/PD代理商", "ND/PD省份", "ND/PD分区"};
 		
 		GenericExcel excel = new GenericExcel();
 		
@@ -114,6 +114,10 @@ public class PoiExample {
 						dataRow.add(new CellDefine(detail.orderCompany, "body"));
 						dataRow.add(new CellDefine(detail.province, "body"));
 						dataRow.add(new CellDefine(detail.region, "body"));
+						dataRow.add(new CellDefine(detail.nd_pd_online, "body"));
+						dataRow.add(new CellDefine(detail.nd_pd_orderCompany, "body"));
+						dataRow.add(new CellDefine(detail.nd_pd_province, "body"));
+						dataRow.add(new CellDefine(detail.nd_pd_region, "body"));
 						excel.writeLine(dataRow);
 					}
 					
@@ -156,6 +160,10 @@ public class PoiExample {
 					dataRow.add(new CellDefine(detail.orderCompany, "body"));
 					dataRow.add(new CellDefine(detail.province, "body"));
 					dataRow.add(new CellDefine(detail.region, "body"));
+					dataRow.add(new CellDefine(detail.nd_pd_online, "body"));
+					dataRow.add(new CellDefine(detail.nd_pd_orderCompany, "body"));
+					dataRow.add(new CellDefine(detail.nd_pd_province, "body"));
+					dataRow.add(new CellDefine(detail.nd_pd_region, "body"));
 					excel.writeLine(dataRow);
 				}
 				
