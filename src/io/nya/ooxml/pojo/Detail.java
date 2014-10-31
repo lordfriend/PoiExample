@@ -8,6 +8,8 @@ public class Detail {
 	@JsonProperty
 	public String sn;
 	@JsonProperty
+	public long match;
+	@JsonProperty
 	public long upload_time;
 	@JsonProperty
 	public long date;
